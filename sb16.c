@@ -11,7 +11,11 @@
 #define SB_DSP_READ   0x0A
 #define SB_DSP_WRITE  0x0C
 #define SB_DSP_STATUS 0x0E
-#define SB_DSP_VERSION 0xE1 
+
+#define SB_DSP_CMD_VERSION     0xE1
+#define SB_DSP_CMD_SPEAKER_ON  0xD1
+#define SB_DSP_CMD_SPEAKER_OFF 0xD3
+#define SB_DSP_CMD_8BIT_OUTPUT 0x14
 
 #define SB_DSP_ACK    0xAA
 
@@ -77,7 +81,7 @@ static u16 sb_dsp_port_detect(void) {
 
 static int sb_get_version(u16 port, struct sb_version_t *version) {
   u8 major, minor;
-  sb_dsp_write(port, SB_DSP_VERSION);
+  sb_dsp_write(port, SB_DSP_CMD_VERSION);
   major = sb_dsp_read(port);
   minor = sb_dsp_read(port);
   version->major = major;
