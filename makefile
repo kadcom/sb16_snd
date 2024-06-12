@@ -1,6 +1,6 @@
 # Watcom WMake for DOS
 DEBUG=1
-PROC_TYPE=8086
+PROC_TYPE=80486
 
 # Set the path to the Watcom compiler
 CC=wcc

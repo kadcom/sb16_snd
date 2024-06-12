@@ -17,13 +17,13 @@
 #define KB_32 (32 * KB)
 #define KB_64 (64 * KB)
 
-typedef uint8_t  u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
+typedef unsigned char  u8;
+typedef unsigned short u16;
+typedef unsigned long u32;
 
-typedef int8_t  s8;
-typedef int16_t s16;
-typedef int32_t s32;
+typedef char  s8;
+typedef short s16;
+typedef long s32;
 
 #define _MAKE16(hi, lo) ((u16)(((u8)(hi) << 8) | (u8)(lo))
 #define _LO(x) ((u8)((x) & 0xFF))
