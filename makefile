@@ -1,11 +1,38 @@
 # Watcom WMake for DOS
+DEBUG=1
+PROC_TYPE=8086
 
 # Set the path to the Watcom compiler
 CC=wcc
-CFLAGS=-zq -ms -bt=dos -0 -s -wx -w4 -d0
+CFLAGS=-zq -ms -bt=dos -0 -wx -w4
 
 CXX=wpp
-CXXFLAGS=-zq -ms -bt=dos -0 -s -wx -w4 -d0
+CXXFLAGS=-zq -ms -bt=dos -0 -wx -w4
+
+!if $(DEBUG)
+CFLAGS+= -d2
+CXXFLAGS+= -d2
+!else
+CFLAGS+= -d0 -s
+CXXFLAGS+= -d0 -s
+!endif
+
+!if $(PROC_TYPE)==8086
+CFLAGS+= -0 
+CXXFLAGS+= -0
+!elseif $(PROC_TYPE)==80286
+CFLAGS+= -2
+CXXFLAGS+= -2
+!elseif $(PROC_TYPE)==80386
+CFLAGS+= -3
+CXXFLAGS+= -3
+!elseif $(PROC_TYPE)==80486
+CFLAGS+= -4
+CXXFLAGS+= -4
+!elseif $(PROC_TYPE)==Pentium
+CFLAGS+= -5
+CXXFLAGS+= -5
+!endif
 
 # Set the path to the Watcom linker
 LINK=wlink
