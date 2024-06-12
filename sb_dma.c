@@ -27,3 +27,19 @@ void sb_dma_free(struct sb_dma_buffer_t *dma_buffer) {
 u32 sb_dma_linear_address(struct sb_dma_buffer_t *dma_buffer) {
   return ((u32)FP_SEG(dma_buffer->buffer) << 4) + FP_OFF(dma_buffer->buffer);
 }
+
+void sb_dma_page_offset(struct sb_dma_buffer_t *dma_buffer, struct sb_dma_page_t *page) {
+  u16 seg = FP_SEG(dma_buffer->buffer);
+  u16 off = FP_OFF(dma_buffer->buffer);
+
+  if (page == NULL) {
+    return;
+  }
+
+  memset(page, 0, sizeof(struct sb_dma_page_t));
+
+  page->page = (u8)(seg >> 12);
+  page->offset = (off + ((seg & 0x000F) << 4)) & 0xFFFF;
+
+  return;
+}

@@ -1,6 +1,7 @@
 #include "platform.h"
 #include "sb16.h"
 #include "irq.h"
+#include "sb_dma.h"
 
 static struct sb_irq_param_t *_irq_param = NULL;
 
@@ -13,6 +14,8 @@ static void __interrupt __far sb_test_irq_handler(void) {
 int main() {
   struct sb_context_t sb_card;
   struct sb_irq_param_t sb_irq_param;
+  struct sb_dma_buffer_t sb_dma_buffer;
+  struct sb_dma_page_t sb_dma_page;
 
   int ret;
 
@@ -41,6 +44,23 @@ int main() {
   int86(sb_irq_param.vector, &regs, &regs);
   delay(15);
   puts(c == 1 ? "[TRIGGERED]" : "[FAIL]");
+
+  puts("Allocating DMA buffer...");
+  ret = sb_dma_init(&sb_dma_buffer);
+
+  if (ret != SB_SUCCESS) {
+    puts("Failed to allocate DMA buffer");
+    sb_irq_shutdown(&sb_irq_param);
+    return ret;
+  }
+
+  printf("Linear address: 0x%08X\n", sb_dma_linear_address(&sb_dma_buffer));
+
+  sb_dma_page_offset(&sb_dma_buffer, &sb_dma_page);
+
+  printf("Page: 0x%02X Offset: 0x%04X\n", sb_dma_page.page, sb_dma_page.offset);
+
+  sb_dma_free(&sb_dma_buffer);
 
   sb_irq_shutdown(&sb_irq_param);
   return 0;
