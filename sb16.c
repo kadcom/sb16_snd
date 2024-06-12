@@ -28,7 +28,6 @@ INLINE static u8 sb_dsp_read(u16 port) {
 }
 
 static int sb_dsp_reset(u16 port) {
-  u8 read_val;
   outp(port + SB_DSP_RESET, 1);
   delay(3);
   outp(port + SB_DSP_RESET, 0);
