@@ -51,11 +51,11 @@ TARGET=sb16.exe
 
 SOURCES=main.c sb16.c
 
-HEARDERS=sb16.h
+HEARDERS=sb16.h platform.h
 
 all: $(TARGET)
 
-$(TARGET): main.obj sb16.obj
+$(TARGET): main.obj sb16.obj $(HEADERS)
 	$(LINK) system dos $LINKER_FLAGS name $@ file  { main.obj sb16.obj }
 
 main.obj: main.c $(HEADERS)
