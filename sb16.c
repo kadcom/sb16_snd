@@ -27,17 +27,14 @@ INLINE static u8 sb_dsp_read(u16 port) {
   return inp(port + SB_DSP_READ);
 }
 
-INLINE static int sb_dsp_reset(u16 port) {
+static int sb_dsp_reset(u16 port) {
   u8 read_val;
   outp(port + SB_DSP_RESET, 1);
   delay(3);
   outp(port + SB_DSP_RESET, 0);
   delay(100);
 
-  read_val = sb_dsp_read(port);
-
-
-  if (read_val != SB_DSP_ACK) {
+  if (sb_dsp_read(port) != SB_DSP_ACK) {
     return -SB_E_FAIL;
   }
 
