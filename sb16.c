@@ -11,6 +11,8 @@
 #define SB_DSP_READ   0x0A
 #define SB_DSP_WRITE  0x0C
 #define SB_DSP_STATUS 0x0E
+#define SB_DSP_VERSION 0xE1 
+
 #define SB_DSP_ACK    0xAA
 
 
@@ -76,6 +78,17 @@ static u16 sb_dsp_port_detect(void) {
   
   return port;
 }
+
+static int sb_get_version(u16 port, struct sb_version_t *version) {
+  u8 major, minor;
+  sb_dsp_write(port, SB_DSP_VERSION);
+  major = sb_dsp_read(port);
+  minor = sb_dsp_read(port);
+  version->major = major;
+  version->minor = minor;
+  return SB_SUCCESS;
+}
+
 /* Initialise and detect the SoundBlaster 16 card */
 int sb_init(struct sb_context_t *sb_card) {
   /* Detect the SoundBlaster 16 card */
@@ -105,16 +118,43 @@ int sb_init(struct sb_context_t *sb_card) {
     }
   }
 
-   
+  if (sb_get_version(sb_card->port, &sb_card->version) != SB_SUCCESS) {
+    return -SB_E_VERSION;
+  }
+
   return SB_SUCCESS;
 }
 
 void sb_print(struct sb_context_t *sb_card) {
+  char const*version_str;
+
+  switch (sb_card->version.major) {
+    case 1:
+      version_str = "SoundBlaster 1.x";
+      break;
+    case 2:
+      version_str = "SoundBlaster 2.0";
+      break;
+    case 3:
+      version_str = "SoundBlaster Pro";
+      break;
+    case 4:
+      version_str = "SoundBlaster 16";
+      break;
+    case 5:
+      version_str = "SoundBlaster AWE32";
+      break;
+    default:
+      version_str = "Unknown";
+      break;
+  }
+
   printf(
-      "SoundBlaster 16 Card\t" 
+      "%s detected!\t" 
       "IRQ: 0x%X "
       "DMA: 0x%X "
       "Port: 0x%X ",
+      version_str,
       sb_card->irq,
       sb_card->dma,
       sb_card->port);
