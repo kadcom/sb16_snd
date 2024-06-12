@@ -4,17 +4,21 @@ PROC_TYPE=8086
 
 # Set the path to the Watcom compiler
 CC=wcc
-CFLAGS=-zq -ms -bt=dos -0 -wx -w4
+CFLAGS=-ms -bt=dos -0 -wx -w4
 
 CXX=wpp
-CXXFLAGS=-zq -ms -bt=dos -0 -wx -w4
+CXXFLAGS=-ms -bt=dos -0 -wx -w4
+
+LINKER_FLAGS= 
 
 !if $(DEBUG)
 CFLAGS+= -d2
 CXXFLAGS+= -d2
+LINKER_FLAGS+= debug all option map 
 !else
 CFLAGS+= -d0 -s
 CXXFLAGS+= -d0 -s
+LINKER_FLAGS+= option quiet
 !endif
 
 !if $(PROC_TYPE)==8086
@@ -49,7 +53,7 @@ HEARDERS=sb16.h
 all: $(TARGET)
 
 $(TARGET): main.obj sb16.obj
-	$(LINK) system dos name $@ file  { main.obj sb16.obj }
+	$(LINK) system dos $LINKER_FLAGS name $@ file  { main.obj sb16.obj }
 
 main.obj: main.c $(HEADERS)
 	$(CC) $(CFLAGS) -fo=$@ $<
@@ -57,5 +61,6 @@ main.obj: main.c $(HEADERS)
 sb16.obj: sb16.c $(HEADERS)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
-clean:
-	del $(OBJECTS) $(TARGET)
+clean: .SYMBOLIC
+	del *.obj
+	del *.exe

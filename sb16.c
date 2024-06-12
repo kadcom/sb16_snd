@@ -1,5 +1,19 @@
 #include "sb16.h"
 
+#define SB_BASE_DETECTION 0x200
+
+/* Default Sound Blaster settings */
+#define SB_DEFAULT_PORT 0x220
+#define SB_DEFAULT_IRQ  5
+#define SB_DEFAULT_DMA  1
+
+#define SB_DSP_RESET  0x06
+#define SB_DSP_READ   0x0A
+#define SB_DSP_WRITE  0x0C
+#define SB_DSP_STATUS 0x0E
+#define SB_DSP_ACK    0xAA
+
+
 /* DSP Read Write */
 INLINE static void sb_dsp_write(u16 port, u8 val) {
   while((inp(port + SB_DSP_WRITE) & 0x80) != 0); /* wait for ready */
@@ -11,77 +25,46 @@ INLINE static u8 sb_dsp_read(u16 port) {
   return inp(port + SB_DSP_READ);
 }
 
-INLINE static int sb_dsp_reset(struct sb_context_t *sb_card) {
-  outp(sb_card->port + SB_DSP_RESET, 1);
+INLINE static int sb_dsp_reset(u16 port) {
+  u8 read_val;
+  outp(port + SB_DSP_RESET, 1);
   delay(3);
-  outp(sb_card->port + SB_DSP_RESET, 0);
+  outp(port + SB_DSP_RESET, 0);
   delay(100);
 
-  if (sb_dsp_read(sb_card->port) != SB_DSP_ACK) {
+  read_val = sb_dsp_read(port);
+
+
+  if (read_val != SB_DSP_ACK) {
     return -SB_E_FAIL;
   }
 
   return SB_SUCCESS;
 }
 
-/* Initialise and detect the SoundBlaster 16 card */
-int sb_init(struct sb_context_t *sb_card) {
-  /* Detect the SoundBlaster 16 card */
-  char const *blaster_env = getenv("BLASTER");
-  char const *c, *c1, *c2;
-  unsigned short port, i;
-  
-  if (blaster_env == NULL) {
-    return -SB_E_NO_BLASTER_ENV;
+INLINE static u16 parse_until_wspace(char const *ptr, char const **end_ptr) {
+  u16 val = 0;
+  while (*ptr != ' ' && *ptr != '\0' && *ptr != '\n' && *ptr != '\r' && *ptr != '\t') {
+    val = (val * 10) + (*ptr - '0');
+    ++ptr;
   }
 
-  memset(sb_card, 0, sizeof(struct sb_context_t));
+  *end_ptr = ptr;
+  return val;
+}
 
-  /* Parse the BLASTER environment variable */
-  for ( c = blaster_env; *c != '\0'; ++c) {
-    c1 = (c + 1);
-
-    /* if next character is null, break */
-    if (*c1 == '\0') {
-      continue;
-    }
-
-    c2 = (c + 2);
-
-    if ( 'i' == ( *c | 0x20 ) ) {
-      sb_card->irq = *c1 - '0';
-      if (*c2 != '\0' || *c2 != ' ') {
-        if (*c2 == '0') {
-          sb_card->irq = 10;
-          ++c;
-        } else {
-          sb_card->irq = (sb_card->irq * 10) + (*c2 - '0');
-          c += 2;
-        }
-      }
-    }
-
-    if ( 'd' == ( *c | 0x20 ) ) {
-      sb_card->dma = *c1 - '0';
-      if (*c2 != '\0' || *c2 != ' ') {
-        if (*c2 == '0') {
-          sb_card->dma = 10;
-          ++c;
-        } else {
-          sb_card->dma = (sb_card->dma * 10) + (*c2 - '0');
-          c += 2;
-        }
-      }
-    }
-  }
-
+static u16 sb_dsp_port_detect(void) {
   /* determine the port */
+  u8 i;
+  u16 port;
+
   for( i = 1; i < 9; ++i) {
     if ( i == 7 ) continue;
 
     port = SB_BASE_DETECTION + (i << 4);
 
-    if (sb_dsp_reset(sb_card) == SB_SUCCESS) {
+    if (sb_dsp_reset(SB_BASE_DETECTION + (i << 4))
+          == SB_SUCCESS) {
       break;
     }
 
@@ -90,16 +73,48 @@ int sb_init(struct sb_context_t *sb_card) {
       break;
     }
   }
+  
+  return port;
+}
+/* Initialise and detect the SoundBlaster 16 card */
+int sb_init(struct sb_context_t *sb_card) {
+  /* Detect the SoundBlaster 16 card */
+  char const *blaster_env = getenv("BLASTER");
+  char const *c, *cnext;
+  
+  if (blaster_env == NULL) {
+    return -SB_E_NO_BLASTER_ENV;
+  }
 
+  memset(sb_card, 0, sizeof(struct sb_context_t));
+
+  sb_card->port = sb_dsp_port_detect();
+  /* Parse the BLASTER environment variable */
+  for ( c = blaster_env; *c != '\0'; ++c) {
+    switch (*c | 0x20) {
+      case 'i':
+        sb_card->irq = parse_until_wspace(c + 1, &cnext);
+        c = cnext;
+        break;
+      case 'd':
+        sb_card->dma = parse_until_wspace(c + 1, &cnext);
+        c = cnext;
+        break;
+      default:
+        continue;
+    }
+  }
+
+   
   return SB_SUCCESS;
 }
 
 void sb_print(struct sb_context_t *sb_card) {
   printf(
-      "SoundBlaster 16 Card\n" 
-      "IRQ: %d\n"
-      "DMA: %d\n"
-      "Port: %d\n",
+      "SoundBlaster 16 Card\t" 
+      "IRQ: 0x%X "
+      "DMA: 0x%X "
+      "Port: 0x%X ",
       sb_card->irq,
       sb_card->dma,
       sb_card->port);
