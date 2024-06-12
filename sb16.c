@@ -1,4 +1,5 @@
 #include "sb16.h"
+#include "platform.h"
 
 #define SB_BASE_DETECTION 0x200
 
@@ -12,10 +13,11 @@
 #define SB_DSP_WRITE  0x0C
 #define SB_DSP_STATUS 0x0E
 
-#define SB_DSP_CMD_VERSION     0xE1
-#define SB_DSP_CMD_SPEAKER_ON  0xD1
-#define SB_DSP_CMD_SPEAKER_OFF 0xD3
-#define SB_DSP_CMD_8BIT_OUTPUT 0x14
+#define SB_DSP_CMD_SET_TIME_CONSTANT  0x40
+#define SB_DSP_CMD_VERSION            0xE1
+#define SB_DSP_CMD_SPEAKER_ON         0xD1
+#define SB_DSP_CMD_SPEAKER_OFF        0xD3
+#define SB_DSP_CMD_8BIT_OUTPUT        0x14
 
 #define SB_DSP_ACK    0xAA
 
@@ -43,6 +45,29 @@ static int sb_dsp_reset(u16 port) {
 
   return SB_SUCCESS;
 }
+
+/* Basic Commands */
+
+void sb_speaker_on(struct sb_context_t *sb_card) {
+  sb_dsp_write(sb_card->port, SB_DSP_CMD_SPEAKER_ON);
+}
+
+void sb_speaker_off(struct sb_context_t *sb_card) {
+  sb_dsp_write(sb_card->port, SB_DSP_CMD_SPEAKER_OFF);
+}
+
+static INLINE u16 time_constant(u8 nchannel, u16 freq) {
+  /* round up because it's supposed to be 65536 but I don't want 32 bit-bit calculations */
+  return 0xFFFF - (256 * 1000000 / (freq * nchannel)) + 0x01; 
+}
+
+void sb_set_time_constant(struct sb_context_t *sb_card, u8 nchannel, u16 freq) {
+  u16 tc = time_constant(nchannel, freq);
+
+  sb_dsp_write(sb_card->port, SB_DSP_CMD_SET_TIME_CONSTANT);
+  sb_dsp_write(sb_card->port, _HI(tc));
+}
+/* Parse a number until a whitespace is found */
 
 INLINE static u16 parse_until_wspace(char const *ptr, char const **end_ptr) {
   u16 val = 0;
