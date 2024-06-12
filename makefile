@@ -36,6 +36,9 @@ CXXFLAGS+= -4
 !elseif $(PROC_TYPE)==Pentium
 CFLAGS+= -5
 CXXFLAGS+= -5
+!else 
+CFLAGS+= -0
+CXXFLAGS+= -0
 !endif
 
 # Set the path to the Watcom linker
