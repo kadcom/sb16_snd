@@ -11,7 +11,34 @@ static void __interrupt __far sb_test_irq_handler(void) {
   outp(_irq_param->port, 0x20);
 }
 
-int main() {
+static int load_file_to_dma_buffer(struct sb_dma_buffer_t *dma_buffer, char const *filename) {
+  FILE *file = fopen(filename, "rb");
+  size_t file_size;
+  if (file == NULL) {
+    return -1;
+  }
+
+  fseek(file, 0, SEEK_END);
+  file_size = ftell(file);
+  rewind(file);
+
+  if (file_size > dma_buffer->capacity) {
+    fclose(file);
+    return -2;
+  }
+
+  fread(dma_buffer->buffer, 1, file_size, file);
+  dma_buffer->size = file_size;
+
+  fclose(file);
+  return 0;
+}
+
+static usage(void) {
+  puts("Usage: sb16 <filename>");
+}
+
+int main(int argc, char **argv) {
   struct sb_context_t sb_card;
   struct sb_irq_param_t sb_irq_param;
   struct sb_dma_buffer_t sb_dma_buffer;
@@ -20,6 +47,11 @@ int main() {
   int ret;
 
   union REGS regs;
+
+  if (argc != 2) {
+    usage();
+    return -SB_E_FAIL;
+  }
 
   ret = sb_init(&sb_card);
   if (ret != SB_SUCCESS) {
@@ -60,9 +92,21 @@ int main() {
     FP_SEG(sb_dma_buffer.buffer), FP_OFF(sb_dma_buffer.buffer),
     sb_dma_linear_address(&sb_dma_buffer),
     sb_dma_page.page, sb_dma_page.offset);
+
+  puts("Loading file to DMA buffer...");
+
+  ret = load_file_to_dma_buffer(&sb_dma_buffer, argv[1]);
+
+  if (ret != 0) {
+    puts("Failed to load file to DMA buffer");
+    sb_dma_free(&sb_dma_buffer);
+    sb_irq_shutdown(&sb_irq_param);
+    return ret;
+  }
+
+  printf("Loaded file to DMA buffer: %d bytes\n", sb_dma_buffer.size);
  
   sb_dma_free(&sb_dma_buffer);
-
   sb_irq_shutdown(&sb_irq_param);
   return 0;
 }
