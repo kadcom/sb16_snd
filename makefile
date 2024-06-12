@@ -49,11 +49,11 @@ LIB=wlib
 
 TARGET=sb16.exe
 
-SOURCES=main.c sb16.c irq.c
+SOURCES=main.c sb16.c irq.c sb_dma.c
 
-HEARDERS=sb16.h platform.h
+HEARDERS=sb16.h platform.h sb_dma.h
 
-OBJECTS=main.obj sb16.obj irq.obj
+OBJECTS=main.obj sb16.obj irq.obj sb_dma.obj
 
 all: $(TARGET)
 
@@ -61,6 +61,9 @@ $(TARGET): $(OBJECTS) $(HEADERS)
 	$(LINK) system dos $LINKER_FLAGS name $@ file  { $(OBJECTS) }
 
 main.obj: main.c $(HEADERS)
+	$(CC) $(CFLAGS) -fo=$@ $<
+
+sb_dma.obj: sb_dma.c $(HEADERS)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
 sb16.obj: sb16.c $(HEADERS)

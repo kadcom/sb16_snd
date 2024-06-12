@@ -37,6 +37,7 @@ typedef int32_t s32;
 #define SB_E_FAIL           1
 #define SB_E_NO_BLASTER_ENV 2
 #define SB_E_VERSION        3
+#define SB_E_NO_MEMORY      4
 
 #define SB_OK(x) ((x) == SB_SUCCESS)
 #define SB_FAIL(x) ((x) != SB_SUCCESS)
