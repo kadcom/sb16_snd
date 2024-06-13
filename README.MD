@@ -11,6 +11,26 @@ Just run `wmake` in the root directory. It will create an `.exe` program
 that you can run on [DOSBox](https://www.dosbox.com/), [86Box](https://86box.net/)
 or a real 80x86 machine.
 
+Before running `wmake`, you need to set the environment variables for OpenWatcom.
+
+For example, in Windows, you can run the following commands:
+
+```
+> owsetenv.bat 
+```
+
+In Linux, you can run the following commands:
+
+```
+$ source owsetenv.sh
+```
+
+Then you can run `wmake` to compile the program.
+
+```
+$ wmake
+```
+
 The options for compiling using `wmake` are:
 
 - `PROC_TYPE` - The processor type. It can be `8086`, `80286`, `80386`, `80486` or `Pentium`.
