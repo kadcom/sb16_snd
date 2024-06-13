@@ -8,7 +8,7 @@
  * to handle the sound blaster IRQ and the timer IRQ.
  */
 
-typedef void interrupt far (*sb_irq_handler_t)(void);
+typedef void interrupt FAR (*sb_irq_handler_t)(void);
 
 struct sb_irq_param_t {
   sb_irq_handler_t handler; /* IRQ handler */

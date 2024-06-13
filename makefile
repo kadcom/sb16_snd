@@ -1,13 +1,28 @@
 # Watcom WMake for DOS
 DEBUG=1
 PROC_TYPE=80486
+PROTECTED_MODE=0
+
+TARGET_PLATFORM=dos 
+
+!if $(PROTECTED_MODE)
+TARGET_PLATFORM=dos4g 
+!endif
 
 # Set the path to the Watcom compiler
 CC=wcc
-CFLAGS=-ms -bt=dos -0 -wx -w4
+CFLAGS=-ms -bt=$(TARGET_PLATFORM) -wx -w4
 
 CXX=wpp
-CXXFLAGS=-ms -bt=dos -0 -wx -w4
+CXXFLAGS=-ms -bt=$(TARGET_PLATFORM) -wx -w4
+
+!if $(PROTECTED_MODE)
+CC=wcc386
+CFLAGS=-bt=$(TARGET_PLATFORM) -wx -w4
+
+CXX=wpp386
+CXXFLAGS=-bt=$(TARGET_PLATFORM) -wx -w4
+!endif
 
 LINKER_FLAGS= 
 
@@ -21,6 +36,21 @@ CXXFLAGS+= -d0 -s -ot
 LINKER_FLAGS+= option quiet
 !endif
 
+!if $(PROTECTED_MODE)
+
+!if $(PROC_TYPE)==80386
+CFLAGS+= -3r
+CXXFLAGS+= -3r
+!elseif $(PROC_TYPE)==80486 
+CFLAGS+= -4r
+CXXFLAGS+= -4r
+!elseif $(PROC_TYPE)==Pentium
+CFLAGS+= -5r
+CXXFLAGS+= -5r
+!else 
+!endif 
+
+!else
 !if $(PROC_TYPE)==8086
 CFLAGS+= -0 
 CXXFLAGS+= -0
@@ -40,6 +70,7 @@ CXXFLAGS+= -5
 CFLAGS+= -0
 CXXFLAGS+= -0
 !endif
+!endif
 
 # Set the path to the Watcom linker
 LINK=wlink
@@ -58,7 +89,7 @@ OBJECTS=main.obj sb16.obj sb_irq.obj sb_dma.obj
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS) $(HEADERS)
-	$(LINK) system dos $LINKER_FLAGS name $@ file  { $(OBJECTS) }
+	$(LINK) system $(TARGET_PLATFORM) $LINKER_FLAGS name $@ file  { $(OBJECTS) }
 
 main.obj: main.c $(HEADERS)
 	$(CC) $(CFLAGS) -fo=$@ $<

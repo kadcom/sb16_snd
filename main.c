@@ -6,7 +6,7 @@
 static struct sb_irq_param_t *_irq_param = NULL;
 
 volatile int c = 0;
-static void interrupt far sb_test_irq_handler(void) {
+static void interrupt FAR sb_test_irq_handler(void) {
   c = 1;
 
   SB_IRQ_ACK(_irq_param->port);
@@ -86,6 +86,7 @@ int main(int argc, char **argv) {
   struct sb_dma_buffer_t sb_dma_buffer;
   struct sb_dma_page_t sb_dma_page;
   struct playback_param_t pbp;
+  u32 page_boundary = 0;
   
   int ret;
 
@@ -116,7 +117,7 @@ int main(int argc, char **argv) {
   regs.h.ah = 0x00;
 
   fputs("\nTesting IRQ... ", stdout);
-  int86(sb_irq_param.vector, &regs, &regs);
+  _INT(sb_irq_param.vector, &regs, &regs);
   delay(15);
   puts(c == 1 ? "[TRIGGERED]" : "[FAIL]");
 
@@ -130,12 +131,7 @@ int main(int argc, char **argv) {
   }
 
   sb_dma_page_offset(&sb_dma_buffer, &sb_dma_page);
-
-  printf("Buffer: %04X:%04X L:0x%08lX P:%X O:%X\n",
-    FP_SEG(sb_dma_buffer.buffer), FP_OFF(sb_dma_buffer.buffer),
-    sb_dma_linear_address(&sb_dma_buffer),
-    sb_dma_page.page, sb_dma_page.offset);
-
+  
   puts("Loading file to DMA buffer...");
 
   ret = load_file_to_dma_buffer(&sb_dma_buffer, pbp.filename);
@@ -152,13 +148,26 @@ int main(int argc, char **argv) {
   printf("Setting up DMA channel %d...\n", sb_card.dma);
   sb_dma_prepare(&sb_dma_buffer, sb_card.dma);
 
+  sb_dma_print_buffer(&sb_dma_buffer);
+
+  if (sb_dma_cross_page(&sb_dma_buffer, &page_boundary)) {
+    printf("Crossing page boundary at address 0x%08lX\n", page_boundary);
+  }
+
+#if !defined(__386__)
+  /* only play sound on 16-bit real mode
+   * the 32-bit implementation always
+   * crosses boundaries.
+   * 
+   * TODO: FIXING PAGE BOUNDARIES CROSSING
+   */
   puts("Playing sound...");
 
   sb_speaker_on(&sb_card);
   sb_set_time_constant(&sb_card, 1, pbp.freq);
   sb_start_block_transfer(&sb_card, &sb_dma_buffer);
   sb_speaker_off(&sb_card);
-
+#endif
   getch();
 
   sb_dma_free(&sb_dma_buffer);

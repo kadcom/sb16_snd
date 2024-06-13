@@ -22,8 +22,11 @@ struct sb_dma_page_t {
 int sb_dma_init(struct sb_dma_buffer_t *dma_buffer /* out */);
 void sb_dma_free(struct sb_dma_buffer_t *dma_buffer);
 
+void sb_dma_print_buffer(struct sb_dma_buffer_t *dma_buffer);
+
 u32 sb_dma_linear_address(struct sb_dma_buffer_t *dma_buffer);
 void sb_dma_page_offset(struct sb_dma_buffer_t *dma_buffer, struct sb_dma_page_t *page /* out */);
+bool sb_dma_cross_page(struct sb_dma_buffer_t *dma_buffer, u32 *cross_page_offset /* out */);
 
 int sb_dma_prepare(struct sb_dma_buffer_t *dma_buffer, u8 dma_channel);
 

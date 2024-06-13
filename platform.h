@@ -7,6 +7,7 @@
 #include <conio.h>
 #include <dos.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #if !defined(INLINE)
 #define INLINE __inline 
@@ -46,6 +47,14 @@ typedef int32_t s32;
 
 #define SB_OK(x) ((x) == SB_SUCCESS)
 #define SB_FAIL(x) ((x) != SB_SUCCESS)
+
+#ifdef __386__
+#define FAR 
+#define _INT(x, regsin, regsout) int386(x, regsin, regsout)
+#else
+#define FAR far
+#define _INT(x, regsin, regsout) int86(x, regsin, regsout)
+#endif
 
 /* Parse a number until a whitespace is found */
 
