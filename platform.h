@@ -42,8 +42,23 @@ typedef long s32;
 #define SB_E_NO_BLASTER_ENV 2
 #define SB_E_VERSION        3
 #define SB_E_NO_MEMORY      4
+#define SB_E_INVALID_PARAM  5
 
 #define SB_OK(x) ((x) == SB_SUCCESS)
 #define SB_FAIL(x) ((x) != SB_SUCCESS)
+
+/* Parse a number until a whitespace is found */
+
+INLINE static u16 parse_until_wspace(char const *ptr, char const **end_ptr) {
+  u16 val = 0;
+  while (*ptr != ' ' && *ptr != '\0' && *ptr != '\n' && *ptr != '\r' && *ptr != '\t') {
+    val = (val * 10) + (*ptr - '0');
+    ++ptr;
+  }
+
+  *end_ptr = ptr;
+  return val;
+}
+
 
 #endif /* PLATFORM_H */

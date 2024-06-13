@@ -67,18 +67,6 @@ void sb_set_time_constant(struct sb_context_t *sb_card, u8 nchannel, u16 freq) {
   sb_dsp_write(sb_card->port, SB_DSP_CMD_SET_TIME_CONSTANT);
   sb_dsp_write(sb_card->port, _HI(tc));
 }
-/* Parse a number until a whitespace is found */
-
-INLINE static u16 parse_until_wspace(char const *ptr, char const **end_ptr) {
-  u16 val = 0;
-  while (*ptr != ' ' && *ptr != '\0' && *ptr != '\n' && *ptr != '\r' && *ptr != '\t') {
-    val = (val * 10) + (*ptr - '0');
-    ++ptr;
-  }
-
-  *end_ptr = ptr;
-  return val;
-}
 
 static u16 sb_dsp_port_detect(void) {
   /* determine the port */
