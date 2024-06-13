@@ -7,7 +7,14 @@
 
 #define DMA_DISABLE 0x04
 #define DMA_ENABLE 0x00
-#define DMA_SINGLE_CYCLE 0x48
+
+/* This bit field needs to be set for each DMA 
+ * It's hard-coded now for DMA1
+ *
+ * If you want to change DMA, please create
+ * a proper function
+ */
+#define DMA_SINGLE_CYCLE 0x49
 
 #define SB_DMA_BUFFER_SIZE KB_16
 
