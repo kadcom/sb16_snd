@@ -48,12 +48,15 @@ u32 sb_dma_linear_address(struct sb_dma_buffer_t *dma_buffer) {
 
 void sb_dma_print_buffer(struct sb_dma_buffer_t *dma_buffer) {
   struct sb_dma_page_t dma_page;
+  void FAR *end_buffer = &dma_buffer->buffer[dma_buffer->size - 1];
+
   sb_dma_page_offset(dma_buffer, &dma_page);
 
-  printf("Buffer: %08lX B: %08lX P:%X O:%X\n",
+  printf("Buffer:%08lX -> %08lX B: %08lX P:%X O:%X\n",
     sb_dma_linear_address(dma_buffer),
+    (u32) end_buffer,
     sb_dma_page_boundary(dma_buffer),
-    dma_page.page, dma_page.offset);
+    dma_page.page, dma_page.offset); 
 }
 #else
 u32 sb_dma_linear_address(struct sb_dma_buffer_t *dma_buffer) {
@@ -66,11 +69,17 @@ u32 sb_dma_linear_address(struct sb_dma_buffer_t *dma_buffer) {
 
 void sb_dma_print_buffer(struct sb_dma_buffer_t *dma_buffer) {
   struct sb_dma_page_t dma_page;
+  void *end_buffer = dma_buffer->buffer + dma_buffer->size;
+
   sb_dma_page_offset(dma_buffer, &dma_page);
 
-  printf("Buffer: %04X:%04X L:0x%08lX B:%08lX P:%X O:%X\n",
+  printf("Buffer: %04X:%04X -> %04X:%04X\nL:0x%08lX -> 0x%08lX  B:%08lX P:%X O:%X\n",
     FP_SEG(dma_buffer->buffer), FP_OFF(dma_buffer->buffer),
+    FP_SEG(end_buffer), FP_OFF(end_buffer),
+
     sb_dma_linear_address(dma_buffer),
+    sb_dma_linear_address(end_buffer),
+
     sb_dma_page_boundary(dma_buffer),
     dma_page.page, dma_page.offset);
 }
@@ -80,16 +89,14 @@ static u32 sb_dma_page_boundary(struct sb_dma_buffer_t *dma_buffer) {
   return (sb_dma_linear_address(dma_buffer) + dma_buffer->size - 1) & 0xFFFF0000;
 }
 
-
 bool sb_dma_cross_page(struct sb_dma_buffer_t *dma_buffer, u32 *cross_page_offset /* out */) {
   u32 const linear_addr = sb_dma_linear_address(dma_buffer);
   u32 const page_boundary = sb_dma_page_boundary(dma_buffer);
 
-
-  if ((linear_addr + dma_buffer->size) < page_boundary) {
+  if ((linear_addr & 0xFFFF0000) == page_boundary) {
     return false;
   }
-
+ 
   if (cross_page_offset != NULL) {
     *cross_page_offset = page_boundary;
   }

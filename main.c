@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
     return ret;
   }
 
-  printf("Loaded file to DMA buffer: %d bytes\n", sb_dma_buffer.size);
+  printf("Loaded file to DMA buffer: %lu (0x%lX) bytes\n", sb_dma_buffer.size, sb_dma_buffer.size);
 
   printf("Setting up DMA channel %d...\n", sb_card.dma);
   sb_dma_prepare(&sb_dma_buffer, sb_card.dma);
@@ -154,20 +154,13 @@ int main(int argc, char **argv) {
     printf("Crossing page boundary at address 0x%08lX\n", page_boundary);
   }
 
-#if !defined(__386__)
-  /* only play sound on 16-bit real mode
-   * the 32-bit implementation always
-   * crosses boundaries.
-   * 
-   * TODO: FIXING PAGE BOUNDARIES CROSSING
-   */
   puts("Playing sound...");
 
   sb_speaker_on(&sb_card);
   sb_set_time_constant(&sb_card, 1, pbp.freq);
   sb_start_block_transfer(&sb_card, &sb_dma_buffer);
   sb_speaker_off(&sb_card);
-#endif
+ 
   getch();
 
   sb_dma_free(&sb_dma_buffer);

@@ -172,11 +172,13 @@ void sb_print(struct sb_context_t *sb_card) {
   }
 
   printf(
-      "%s detected!\t" 
+      "%s (%d.%02d) detected!\t" 
       "IRQ: 0x%X "
       "DMA: 0x%X "
       "Port: 0x%X ",
       version_str,
+      sb_card->version.major,
+      sb_card->version.minor,
       sb_card->irq,
       sb_card->dma,
       sb_card->port);
