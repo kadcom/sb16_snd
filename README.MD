@@ -46,11 +46,34 @@ The options for compiling using `wmake` are:
 
 ## Running
 
-Just run the program with the name of the file you want to play. For example:
+Just run the program with the name of the file you want to play. The command 
+line is:
 
 ```
-sb16.exe test_wav.raw
+sb16.exe -8 | -11 | -22 <filename.raw>
 ```
+
+For example:
+
+```
+sb16.exe -8 bmu8_8k.raw
+```
+
+### Converting Wave to Raw for playing 
+
+You can use ffmpeg to convert a WAV file to a raw file. For example:
+
+```
+ffmpeg -i input.wav -f u8 -ar 8000 -ac 1 output.raw
+```
+
+or use sox 
+
+```
+sox input.wav -r 8000 -c 1 -b 8 output.raw
+```
+
+You can then use teh raw file to play with the program.
 
 ## Limitation 
 
