@@ -1,5 +1,5 @@
-#ifndef IRQ_H
-#define IRQ_H
+#ifndef SB_IRQ_H
+#define SB_IRQ_H
 
 #include "platform.h"
 
@@ -23,4 +23,6 @@ struct sb_irq_param_t {
 int sb_irq_init(u8 irq, sb_irq_handler_t handler, struct sb_irq_param_t *param);
 void sb_irq_shutdown(struct sb_irq_param_t *param);
 
-#endif /* IRQ_H */
+#define SB_IRQ_ACK(port) outp(port, 0x20)
+
+#endif /* SB_IRQ_H */

@@ -49,11 +49,11 @@ LIB=wlib
 
 TARGET=sb16.exe
 
-SOURCES=main.c sb16.c irq.c sb_dma.c
+SOURCES=main.c sb16.c sb_irq.c sb_dma.c
 
-HEARDERS=sb16.h platform.h sb_dma.h
+HEARDERS=sb16.h platform.h sb_dma.h sb_irq.h
 
-OBJECTS=main.obj sb16.obj irq.obj sb_dma.obj
+OBJECTS=main.obj sb16.obj sb_irq.obj sb_dma.obj
 
 all: $(TARGET)
 
@@ -69,7 +69,7 @@ sb_dma.obj: sb_dma.c $(HEADERS)
 sb16.obj: sb16.c $(HEADERS)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
-irq.obj: irq.c $(HEADERS)
+sb_irq.obj: sb_irq.c $(HEADERS)
 	$(CC) $(CFLAGS) -fo=$@ $<
 
 clean: .SYMBOLIC

@@ -1,4 +1,4 @@
-#include "irq.h"
+#include "sb_irq.h"
 #include "platform.h"
 
 static int build_irq_param(struct sb_irq_param_t *param, u8 irq, sb_irq_handler_t handler) {

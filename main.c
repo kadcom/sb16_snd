@@ -1,14 +1,15 @@
 #include "platform.h"
 #include "sb16.h"
-#include "irq.h"
+#include "sb_irq.h"
 #include "sb_dma.h"
 
 static struct sb_irq_param_t *_irq_param = NULL;
 
 volatile int c = 0;
-static void __interrupt __far sb_test_irq_handler(void) {
+static void interrupt far sb_test_irq_handler(void) {
   c = 1;
-  outp(_irq_param->port, 0x20);
+
+  SB_IRQ_ACK(_irq_param->port);
 }
 
 static int load_file_to_dma_buffer(struct sb_dma_buffer_t *dma_buffer, char const *filename) {
