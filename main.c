@@ -5,10 +5,11 @@
 
 static struct sb_irq_param_t *_irq_param = NULL;
 
-volatile int c = 0;
+volatile int played = 0;
 static void interrupt FAR sb_test_irq_handler(void) {
-  c = 1;
+  played = 1;
 
+  puts("IRQ handler called");
   SB_IRQ_ACK(_irq_param->port);
 }
 
@@ -115,11 +116,8 @@ int main(int argc, char **argv) {
   _irq_param = &sb_irq_param;
 
   regs.h.ah = 0x00;
-
-  fputs("\nTesting IRQ... ", stdout);
-  _INT(sb_irq_param.vector, &regs, &regs);
-  delay(15);
-  puts(c == 1 ? "[TRIGGERED]" : "[FAIL]");
+ 
+  played = false; /* Reset IRQ flag */
 
   puts("Allocating DMA buffer...");
   ret = sb_dma_init(&sb_dma_buffer);
@@ -160,7 +158,7 @@ int main(int argc, char **argv) {
   sb_set_time_constant(&sb_card, 1, pbp.freq);
   sb_start_block_transfer(&sb_card, &sb_dma_buffer);
   sb_speaker_off(&sb_card);
- 
+  
   getch();
 
   sb_dma_free(&sb_dma_buffer);
