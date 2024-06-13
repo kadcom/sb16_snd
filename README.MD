@@ -7,6 +7,13 @@ It's written purely in C and you need OpenWatcom to compile it.
 
 ## Compiling
 
+This program is written in C and you need OpenWatcom to compile it. Download 
+OpenWatcom from [here](https://open-watcom.github.io/) for version 2.0 and
+download "Latest CI Build" from the "Release" section.
+
+You can also use older version of OpenWatcom. It should work with version 1.9.
+Download from [here](https://www.openwatcom.org/).
+
 Just run `wmake` in the root directory. It will create an `.exe` program
 that you can run on [DOSBox](https://www.dosbox.com/), [86Box](https://86box.net/)
 or a real 80x86 machine.
