@@ -16,8 +16,8 @@ CFLAGS+= -d2
 CXXFLAGS+= -d2
 LINKER_FLAGS+= debug all option map 
 !else
-CFLAGS+= -d0 -s
-CXXFLAGS+= -d0 -s
+CFLAGS+= -d0 -s -ot 
+CXXFLAGS+= -d0 -s -ot
 LINKER_FLAGS+= option quiet
 !endif
 
