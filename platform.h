@@ -17,6 +17,10 @@
 #define KB_32 (32 * KB)
 #define KB_64 (64 * KB)
 
+#define HZ_8K  8000
+#define HZ_11K 11025
+#define HZ_22K 22050
+
 typedef unsigned char  u8;
 typedef unsigned short u16;
 typedef unsigned long u32;

@@ -150,6 +150,15 @@ int sb_init(struct sb_context_t *sb_card) {
   return SB_SUCCESS;
 }
 
+/* Start Block Transfer */
+void sb_start_block_transfer(struct sb_context_t *sb_card, struct sb_dma_buffer_t *dma_buffer) {
+  sb_dsp_write(sb_card->port, SB_DSP_CMD_8BIT_OUTPUT);
+  sb_dsp_write(sb_card->port, _LO(dma_buffer->size));
+  sb_dsp_write(sb_card->port, _HI(dma_buffer->size));
+}
+
+
+/* Print the SoundBlaster 16 card information */
 void sb_print(struct sb_context_t *sb_card) {
   char const*version_str;
 

@@ -2,6 +2,7 @@
 #define SB16_H
 
 #include "platform.h"
+#include "sb_dma.h"
 
 struct sb_version_t {
   u8 major;
@@ -31,5 +32,8 @@ void sb_speaker_off(struct sb_context_t *sb_card);
 
 /* Set the time constant for the speaker */
 void sb_set_time_constant(struct sb_context_t *sb_card, u8 nchannel, u16 freq);
+
+/* Start Block Transfer */
+void sb_start_block_transfer(struct sb_context_t *sb_card, struct sb_dma_buffer_t *dma_buffer);
 
 #endif /* SB16_H */

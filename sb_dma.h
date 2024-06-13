@@ -25,4 +25,6 @@ void sb_dma_free(struct sb_dma_buffer_t *dma_buffer);
 u32 sb_dma_linear_address(struct sb_dma_buffer_t *dma_buffer);
 void sb_dma_page_offset(struct sb_dma_buffer_t *dma_buffer, struct sb_dma_page_t *page /* out */);
 
+int sb_dma_prepare(struct sb_dma_buffer_t *dma_buffer, u8 dma_channel);
+
 #endif /* SB_DMA_H */

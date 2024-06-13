@@ -34,7 +34,7 @@ static int load_file_to_dma_buffer(struct sb_dma_buffer_t *dma_buffer, char cons
   return 0;
 }
 
-static usage(void) {
+static void usage(void) {
   puts("Usage: sb16 <filename>");
 }
 
@@ -105,7 +105,19 @@ int main(int argc, char **argv) {
   }
 
   printf("Loaded file to DMA buffer: %d bytes\n", sb_dma_buffer.size);
- 
+
+  printf("Setting up DMA channel %d...\n", sb_card.dma);
+  sb_dma_prepare(&sb_dma_buffer, sb_card.dma);
+
+  puts("Playing sound...");
+
+  sb_speaker_on(&sb_card);
+  sb_set_time_constant(&sb_card, 1, HZ_8K);
+  sb_start_block_transfer(&sb_card, &sb_dma_buffer);
+  sb_speaker_off(&sb_card);
+
+  getch();
+
   sb_dma_free(&sb_dma_buffer);
   sb_irq_shutdown(&sb_irq_param);
   return 0;
