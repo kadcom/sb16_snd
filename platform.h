@@ -69,5 +69,6 @@ INLINE static u16 parse_until_wspace(char const *ptr, char const **end_ptr) {
   return val;
 }
 
+extern bool verbose_debug;
 
 #endif /* PLATFORM_H */

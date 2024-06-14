@@ -36,24 +36,49 @@ static int build_irq_param(struct sb_irq_param_t *param, u8 irq, sb_irq_handler_
 static struct sb_irq_param_t *_irq_param = NULL;
 
 int sb_irq_init(u8 irq, sb_irq_handler_t handler, struct sb_irq_param_t *param) {
-  u8 const imr_port = param->port + 1;
-  u8 const irq_mask = 1 << (param->irq & 0x07);
-
+  u8 imr_port, irq_mask, imr_mask;
+  
   if (SB_FAIL(build_irq_param(param, irq, handler))) {
     return -SB_E_FAIL;
   }
+
+  imr_port = param->port + 1;
+  irq_mask = 1 << (param->irq & 0x07);
+  imr_mask = inp(imr_port);
+
+  if (verbose_debug) {
+    printf("IRQ %d: port 0x%02X, vector 0x%02X\n", param->irq, param->port, param->vector);
+    printf("IMR port: 0x%02X, IMR: %02X, IRQ_MASK: %02X\n", imr_port, imr_mask, irq_mask);
+  }
+
+  _disable();
 
   /* get teh old vector */
   param->old_handler = _dos_getvect(param->vector);
 
   /* Turn off IRQ on that specific irq line */
-  outp(imr_port, inp(imr_port) | irq_mask);
+  outp(imr_port, imr_mask | irq_mask);
 
   /* Set the new vector */
-  _dos_setvect(param->vector, param->handler);
+  _dos_setvect(param->vector, handler);
+
+  imr_mask = inp(imr_port);
+
+  if (verbose_debug) {
+    printf("IMR port: 0x%02X, IMR: %02X, IRQ_MASK: %02X\n", imr_port, imr_mask, ~irq_mask);
+  }
 
   /* Turn on IRQ on that specific irq line */
-  outp(imr_port, inp(imr_port) & ~irq_mask);
+  outp(imr_port, imr_mask & ~irq_mask);
+
+  imr_mask = inp(imr_port);
+
+  if (verbose_debug) {
+    printf("IMR port: 0x%02X, IMR: %02X, IRQ_MASK: %02X\n", imr_port, imr_mask, ~irq_mask);
+  }
+
+
+  _enable();
 
   _irq_param = param;
 
@@ -64,15 +89,18 @@ int sb_irq_init(u8 irq, sb_irq_handler_t handler, struct sb_irq_param_t *param) 
 void sb_irq_shutdown(struct sb_irq_param_t *param) {
   u8 const imr_port = param->port + 1;
   u8 const irq_mask = 1 << (param->irq & 0x07);
+  u8 imr_mask = inp(imr_port);
 
   /* Turn off IRQ on that specific irq line */
-  outp(imr_port, inp(imr_port) | irq_mask);
+  outp(imr_port, imr_mask | irq_mask);
 
   /* Set the old vector */
   _dos_setvect(param->vector, param->old_handler);
 
+  imr_mask = inp(imr_port);
+
   /* Turn on IRQ on that specific irq line */
-  outp(imr_port, inp(imr_port) & ~irq_mask);
+  outp(imr_port, imr_mask & ~irq_mask);
 
   _irq_param = NULL;
 }

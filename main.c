@@ -3,13 +3,15 @@
 #include "sb_irq.h"
 #include "sb_dma.h"
 
+bool verbose_debug = true;
 static struct sb_irq_param_t *_irq_param = NULL;
+static u16 sb_base_port = 0x220;
 
-volatile int played = 0;
+volatile bool played = false;
+
 static void interrupt FAR sb_test_irq_handler(void) {
-  played = 1;
-
-  puts("IRQ handler called");
+  played = true;
+  outp(sb_base_port + 0x0C, 0x20);
   SB_IRQ_ACK(_irq_param->port);
 }
 
@@ -91,7 +93,6 @@ int main(int argc, char **argv) {
   
   int ret;
 
-  union REGS regs;
 
   if (parse_cmd_line(argc, argv, &pbp) != SB_SUCCESS) {
     usage();
@@ -103,6 +104,8 @@ int main(int argc, char **argv) {
     puts("Failed to initialise SoundBlaster 16 card");
     return ret;
   }
+
+  sb_base_port = sb_card.port;
 
   sb_print(&sb_card);
 
@@ -158,8 +161,15 @@ int main(int argc, char **argv) {
   sb_set_time_constant(&sb_card, 1, pbp.freq);
   sb_start_block_transfer(&sb_card, &sb_dma_buffer);
   sb_speaker_off(&sb_card);
-  
-  getch();
+
+  while (!kbhit()) {
+    if (!played) {
+      continue;
+    }
+    puts("IRQ received");
+    break;
+  }
+
 
   sb_dma_free(&sb_dma_buffer);
   sb_irq_shutdown(&sb_irq_param);
