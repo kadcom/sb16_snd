@@ -35,6 +35,7 @@ static int build_irq_param(struct sb_irq_param_t *param, u8 irq, sb_irq_handler_
 
 static int install_irq_handler(struct sb_irq_param_t *param) {
 
+  _disable();
   /* get teh old vector */
   param->old_handler = _dos_getvect(param->vector);
 
@@ -43,15 +44,18 @@ static int install_irq_handler(struct sb_irq_param_t *param) {
 
   /* unmask the IRQ */
   outp(param->port + 1, inp(param->port + 1) & ~(1 << (param->irq & 0x07)));
+  _enable();
 
   return SB_SUCCESS;
 }
 
 static int remove_irq_handler(struct sb_irq_param_t *param) {
- 
+
+  _disable();
   /* Set the old vector */
   _dos_setvect(param->vector, param->old_handler);
 
+  _enable();
 
   return SB_SUCCESS;
 }

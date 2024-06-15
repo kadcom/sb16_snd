@@ -59,12 +59,16 @@ void sb_dma_print_buffer(struct sb_dma_buffer_t *dma_buffer) {
     dma_page.page, dma_page.offset); 
 }
 #else
-u32 sb_dma_linear_address(struct sb_dma_buffer_t *dma_buffer) {
-  u16 seg = FP_SEG(dma_buffer->buffer);
-  u16 off = FP_OFF(dma_buffer->buffer);
+
+static INLINE u32 ptr_to_linear_address(void *ptr) {
+  u16 seg = FP_SEG(ptr);
+  u16 off = FP_OFF(ptr);
 
   return ((u32)seg << 4) + off;
+}
 
+u32 sb_dma_linear_address(struct sb_dma_buffer_t *dma_buffer) {
+  return ptr_to_linear_address(dma_buffer->buffer); 
 }
 
 void sb_dma_print_buffer(struct sb_dma_buffer_t *dma_buffer) {
@@ -78,7 +82,7 @@ void sb_dma_print_buffer(struct sb_dma_buffer_t *dma_buffer) {
     FP_SEG(end_buffer), FP_OFF(end_buffer),
 
     sb_dma_linear_address(dma_buffer),
-    sb_dma_linear_address(end_buffer),
+    ptr_to_linear_address(end_buffer),
 
     sb_dma_page_boundary(dma_buffer),
     dma_page.page, dma_page.offset);
