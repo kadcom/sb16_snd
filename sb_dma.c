@@ -39,9 +39,6 @@ void sb_dma_free(struct sb_dma_buffer_t *dma_buffer) {
   dma_buffer->size = 0;
 }
 
-static u32 sb_first_page_boundary(struct sb_dma_buffer_t *dma_buffer);
-static u32 sb_last_page_boundary(struct sb_dma_buffer_t *dma_buffer);
-
 u16 sb_dma_pages_allocated(struct sb_dma_buffer_t *dma_buffer) {
   u32 const first_page_boundary = sb_first_page_boundary(dma_buffer);
   u32 const last_page_boundary = sb_last_page_boundary(dma_buffer);
@@ -102,11 +99,11 @@ void sb_dma_print_buffer(struct sb_dma_buffer_t *dma_buffer) {
 }
 #endif
 
-static u32 sb_last_page_boundary(struct sb_dma_buffer_t *dma_buffer) {
+u32 sb_last_page_boundary(struct sb_dma_buffer_t *dma_buffer) {
   return (sb_dma_linear_address(dma_buffer) + dma_buffer->size) & 0xFFFF0000;
 }
 
-static u32 sb_first_page_boundary(struct sb_dma_buffer_t *dma_buffer) {
+u32 sb_first_page_boundary(struct sb_dma_buffer_t *dma_buffer) {
   return sb_dma_linear_address(dma_buffer) & 0xFFFF0000;
 }
 

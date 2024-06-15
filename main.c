@@ -190,10 +190,6 @@ int main(int argc, char **argv) {
   sb_dma_prepare(&sb_dma_buffer, sb_card.dma);
 
   sb_dma_print_buffer(&sb_dma_buffer);
-
-  if (sb_dma_cross_page(&sb_dma_buffer, &page_boundary)) {
-    printf("Crossing page boundary at address 0x%08lX\n", page_boundary);
-  }
   
   puts("Playing sound...");
 

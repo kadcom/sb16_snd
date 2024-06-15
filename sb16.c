@@ -1,5 +1,6 @@
 #include "sb16.h"
 #include "platform.h"
+#include "sb_dma.h"
 
 #define SB_BASE_DETECTION 0x200
 
@@ -140,12 +141,27 @@ int sb_init(struct sb_context_t *sb_card) {
 
 /* Start Block Transfer */
 void sb_start_block_transfer(struct sb_context_t *sb_card, struct sb_dma_buffer_t *dma_buffer) {
-  /* WARNING: Needs to be 1 less than the actual size */
-  u16 const dma_block_size = dma_buffer->size - 1;
+  u16 dma_block_size = dma_buffer->size;
+  u32 cross_boundary;
+
+  /* If the allocated is crossing 64 boundary,
+   * we cut it to the border
+   */
+
+  if (sb_dma_pages_allocated(dma_buffer) > 1) {
+    /* Only 2 pages are supported */
+    dma_block_size = sb_last_page_boundary(dma_buffer) - sb_dma_linear_address(dma_buffer);
+ 
+    sb_dma_cross_page(dma_buffer, &cross_boundary);
+
+    /* TODO: Manage split buffer */
+    printf("Warning: DMA buffer is crossing 64K boundary at %08lX\n", cross_boundary);
+    printf("Adjusting DMA block size to %08X. Sound may be truncated.\n", dma_block_size);
+  }
 
   sb_dsp_write(sb_card->port, SB_DSP_CMD_8BIT_OUTPUT);
-  sb_dsp_write(sb_card->port, _LO(dma_block_size));
-  sb_dsp_write(sb_card->port, _HI(dma_block_size));
+  sb_dsp_write(sb_card->port, _LO(dma_block_size - 1));
+  sb_dsp_write(sb_card->port, _HI(dma_block_size - 1));
 }
 
 
