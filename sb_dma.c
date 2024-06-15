@@ -117,7 +117,7 @@ int sb_dma_prepare(struct sb_dma_buffer_t *dma_buffer, u8 dma_channel) {
   u8 const dma_channel_port_count = dma_channel_port_addr + 1;
   u8 dma_page_port = 0x87;
   
-  u16 const dma_count = dma_buffer->size - 1;
+  u16 const dma_count = dma_buffer->size;
 
   struct sb_dma_page_t dma_page;
   sb_dma_page_offset(dma_buffer, &dma_page);

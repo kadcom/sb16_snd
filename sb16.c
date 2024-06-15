@@ -140,9 +140,12 @@ int sb_init(struct sb_context_t *sb_card) {
 
 /* Start Block Transfer */
 void sb_start_block_transfer(struct sb_context_t *sb_card, struct sb_dma_buffer_t *dma_buffer) {
+  /* WARNING: Needs to be 1 less than the actual size */
+  u16 const dma_block_size = dma_buffer->size - 1;
+
   sb_dsp_write(sb_card->port, SB_DSP_CMD_8BIT_OUTPUT);
-  sb_dsp_write(sb_card->port, _LO(dma_buffer->size));
-  sb_dsp_write(sb_card->port, _HI(dma_buffer->size));
+  sb_dsp_write(sb_card->port, _LO(dma_block_size));
+  sb_dsp_write(sb_card->port, _HI(dma_block_size));
 }
 
 
@@ -172,10 +175,10 @@ void sb_print(struct sb_context_t *sb_card) {
   }
 
   printf(
-      "%s (%d.%02d) detected!\t" 
+      "%s (%d.%02d) detected!\n" 
       "IRQ: 0x%X "
       "DMA: 0x%X "
-      "Port: 0x%X ",
+      "Port: 0x%X\n",
       version_str,
       sb_card->version.major,
       sb_card->version.minor,
