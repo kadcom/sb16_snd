@@ -9,6 +9,7 @@
  */
 
 struct sb_dma_buffer_t {
+  u8 *origin;
   u8 *buffer;
   u32 size;
   u32 capacity;

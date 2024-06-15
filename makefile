@@ -9,6 +9,9 @@ TARGET_PLATFORM=dos
 TARGET_PLATFORM=dos4g 
 !endif
 
+
+LINKER_FLAGS= 
+
 # Set the path to the Watcom compiler
 CC=wcc
 CFLAGS=-ms -bt=$(TARGET_PLATFORM) -wx -w4
@@ -22,9 +25,10 @@ CFLAGS=-bt=$(TARGET_PLATFORM) -wx -w4
 
 CXX=wpp386
 CXXFLAGS=-bt=$(TARGET_PLATFORM) -wx -w4
+
+LINKER_FLAGS+= option heap=1024 
 !endif
 
-LINKER_FLAGS= 
 
 !if $(DEBUG)
 CFLAGS+= -d2

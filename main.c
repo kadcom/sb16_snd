@@ -127,7 +127,6 @@ int main(int argc, char **argv) {
   struct sb_dma_buffer_t sb_dma_buffer;
   struct sb_dma_page_t sb_dma_page;
   struct playback_param_t pbp;
-  u32 page_boundary = 0;
 
   u16 mixer_irq_port;
   u8 mixer_irq;

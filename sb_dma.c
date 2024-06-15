@@ -1,6 +1,8 @@
 #include "sb_dma.h"
 #include "platform.h"
 
+#include <malloc.h>
+
 #define DMA_MASK_REG 0x0A
 #define DMA_MODE_REG 0x0B
 #define DMA_FLIP_FLOP_REG 0x0C
@@ -16,22 +18,49 @@
  */
 #define DMA_SINGLE_CYCLE 0x48
 
-#define SB_DMA_BUFFER_SIZE KB_16
+#define SB_DMA_BUFFER_SIZE KB_32
+#define SB_DMA_PAGE_SIZE KB_64
+
+static u32 ptr_to_linear_address(void *ptr);
 
 int sb_dma_init(struct sb_dma_buffer_t *dma_buffer /* out */) {
+  u8 *buf; 
+  u32 linear_addr;
+  u16 delta;
+
   memset(dma_buffer, 0, sizeof(struct sb_dma_buffer_t));
-  dma_buffer->buffer = malloc(SB_DMA_BUFFER_SIZE * 2);
-  if (dma_buffer->buffer == NULL) {
+
+  buf = malloc(SB_DMA_BUFFER_SIZE);
+  
+  if (buf == NULL) {
     return -SB_E_NO_MEMORY;
   }
 
-  dma_buffer->capacity = SB_DMA_BUFFER_SIZE * 2;
+  /* get linear address */
+  linear_addr = ptr_to_linear_address(buf);
+
+  /* adjust the buffer to be aligned to 64K */
+  delta = ((linear_addr + SB_DMA_PAGE_SIZE) & 0xFFFF0000) - linear_addr;
+
+  /* expand the buffer if necessary */
+  if (delta > 0) {
+    if (_expand(buf, SB_DMA_BUFFER_SIZE + delta) == NULL) {
+      free(buf);
+      return -SB_E_NO_MEMORY;
+    }
+  }
+
+  dma_buffer->origin = buf;
+  dma_buffer->buffer = buf + delta; 
+  dma_buffer->capacity = SB_DMA_BUFFER_SIZE;
+
   return SB_SUCCESS;
 }
 
 void sb_dma_free(struct sb_dma_buffer_t *dma_buffer) {
-  if (dma_buffer->buffer != NULL) {
-    free(dma_buffer->buffer);
+  if (dma_buffer->origin != NULL) {
+    free(dma_buffer->origin);
+    dma_buffer->origin = NULL;
     dma_buffer->buffer = NULL;
   }
 
@@ -51,13 +80,19 @@ u32 sb_dma_linear_address(struct sb_dma_buffer_t *dma_buffer) {
   return (u32)dma_buffer->buffer;
 }
 
+static u32 ptr_to_linear_address(void *ptr) {
+  return (u32)ptr;
+}
+
 void sb_dma_print_buffer(struct sb_dma_buffer_t *dma_buffer) {
   struct sb_dma_page_t dma_page;
   void FAR *end_buffer = &dma_buffer->buffer[dma_buffer->size - 1];
 
   sb_dma_page_offset(dma_buffer, &dma_page);
 
-  printf("Buffer:%08lX -> %08lX B: %08lX P:%X O:%X\n",
+  printf("Origin:%08lX\n"
+         "Buffer:%08lX -> %08lX B: %08lX P:%X O:%X\n",
+    ptr_to_linear_address(dma_buffer->origin),
     sb_dma_linear_address(dma_buffer),
     (u32) end_buffer,
     sb_last_page_boundary(dma_buffer),
@@ -65,7 +100,7 @@ void sb_dma_print_buffer(struct sb_dma_buffer_t *dma_buffer) {
 }
 #else
 
-static INLINE u32 ptr_to_linear_address(void *ptr) {
+static u32 ptr_to_linear_address(void *ptr) {
   u16 seg = FP_SEG(ptr);
   u16 off = FP_OFF(ptr);
 
@@ -84,9 +119,12 @@ void sb_dma_print_buffer(struct sb_dma_buffer_t *dma_buffer) {
 
   sb_dma_page_offset(dma_buffer, &dma_page);
 
-  printf("Buffer: %04X:%04X -> %04X:%04X L:0x%08lX -> 0x%08lX \n"
+  printf("Origin: %04X:%04X 0x%08lX\n"
+         "Buffer: %04X:%04X -> %04X:%04X L:0x%08lX -> 0x%08lX \n"
 
          "FB: %08lX LB:%08lX NP: %d P:%X O:%X\n",
+    FP_SEG(dma_buffer->origin), FP_OFF(dma_buffer->origin),
+    ptr_to_linear_address(dma_buffer->origin),
     FP_SEG(dma_buffer->buffer), FP_OFF(dma_buffer->buffer),
     FP_SEG(end_buffer), FP_OFF(end_buffer),
 
